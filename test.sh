@@ -21,5 +21,6 @@ try 0 0
 try 42 42
 try 2 1+1
 try 51 5-21+67
+try 233 '10 - 34 + 1'
 
 echo OK
