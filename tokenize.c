@@ -26,45 +26,6 @@ void error_at(char *loc, char *fmt, ...)
   exit(1);
 }
 
-// 次のトークンが期待している記号のときには、トークンを1つ読み進めて
-// 真を返す。それ以外の場合には偽を返す。
-bool consume(char *op)
-{
-  if (token->kind != TK_RESERVED ||
-      strlen(op) != token->len ||
-      memcmp(token->str, op, token->len))
-    return false;
-  token = token->next;
-  return true;
-}
-
-// 次のトークンが期待している記号のときには、トークンを1つ読み進める。
-// それ以外の場合にはエラーを報告する。
-void expect(char *op)
-{
-  if (token->kind != TK_RESERVED ||
-      strlen(op) != token->len ||
-      memcmp(token->str, op, token->len))
-    error_at(token->str, "'%s'ではありません", op);
-  token = token->next;
-}
-
-// 次のトークンが数値の場合、トークンを1つ読み進めてその数値を返す。
-// それ以外の場合にはエラーを報告する。
-int expect_number(void)
-{
-  if (token->kind != TK_NUM)
-    error_at(token->str, "数値ではありません");
-  int val = token->val;
-  token = token->next;
-  return val;
-}
-
-bool at_eof(void)
-{
-  return token->kind == TK_EOF;
-}
-
 Token *new_token(TokenKind kind, Token *cur, char *str, int len)
 {
   Token *tok = calloc(1, sizeof(Token));
@@ -106,9 +67,16 @@ Token *tokenize()
     }
 
     // single-letter punctuator
-    if (strchr("+-*/()<>", *p))
+    if (strchr("+-*/()<>;=", *p))
     {
       cur = new_token(TK_RESERVED, cur, p++, 1);
+      continue;
+    }
+
+    if ('a' <= *p && *p <= 'z')
+    {
+      cur = new_token(TK_IDENT, cur, p++, 0);
+      cur->len = 1;
       continue;
     }
 
