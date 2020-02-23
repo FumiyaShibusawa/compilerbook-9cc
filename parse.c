@@ -1,5 +1,53 @@
 #include "9cc.h"
 
+// 次のトークンが期待している記号のときには、トークンを1つ読み進めて
+// 真を返す。それ以外の場合には偽を返す。
+bool consume(char *op)
+{
+  if (token->kind != TK_RESERVED ||
+      strlen(op) != token->len ||
+      memcmp(token->str, op, token->len))
+    return false;
+  token = token->next;
+  return true;
+}
+
+Token *consume_ident(void)
+{
+  if (token->kind != TK_IDENT)
+    return false;
+  Token *lvar = token;
+  token = token->next;
+  return lvar;
+}
+
+// 次のトークンが期待している記号のときには、トークンを1つ読み進める。
+// それ以外の場合にはエラーを報告する。
+void expect(char *op)
+{
+  if (token->kind != TK_RESERVED ||
+      strlen(op) != token->len ||
+      memcmp(token->str, op, token->len))
+    error_at(token->str, "'%s'ではありません", op);
+  token = token->next;
+}
+
+// 次のトークンが数値の場合、トークンを1つ読み進めてその数値を返す。
+// それ以外の場合にはエラーを報告する。
+int expect_number(void)
+{
+  if (token->kind != TK_NUM)
+    error_at(token->str, "数値ではありません");
+  int val = token->val;
+  token = token->next;
+  return val;
+}
+
+bool at_eof(void)
+{
+  return token->kind == TK_EOF;
+}
+
 Node *new_node(NodeKind kind)
 {
   Node *node = calloc(1, sizeof(Node));
@@ -22,9 +70,43 @@ Node *new_node_num(int val)
   return node;
 }
 
+Node *new_node_lvar(char *str)
+{
+  Node *node = new_node(ND_LVAR);
+  node->offset = (str[0] - 'a' + 1) * 8;
+  return node;
+}
+
+void *program()
+{
+  int i = 0;
+  while (!at_eof())
+    code[i++] = stmt();
+  code[i] = NULL;
+}
+
+Node *stmt()
+{
+  Node *node = expr();
+  expect(";");
+  return node;
+}
+
 Node *expr()
 {
-  return equality();
+  return assign();
+}
+
+Node *assign()
+{
+  Node *node = equality();
+  for (;;)
+  {
+    if (consume("="))
+      node = new_binary(ND_ASSIGN, node, assign());
+    else
+      return node;
+  }
 }
 
 // equality = relational ("==" relational | "!=" relational)*
@@ -109,5 +191,9 @@ Node *primary()
     return node;
   }
 
-  return new_node_num(expect_number());
+  Token *tok = consume_ident();
+  if (tok)
+    return new_node_lvar(tok->str);
+  else
+    return new_node_num(expect_number());
 }
