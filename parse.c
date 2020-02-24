@@ -16,9 +16,9 @@ Token *consume_ident(void)
 {
   if (token->kind != TK_IDENT)
     return false;
-  Token *lvar = token;
+  Token *tok = token;
   token = token->next;
-  return lvar;
+  return tok;
 }
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
@@ -70,11 +70,14 @@ Node *new_node_num(int val)
   return node;
 }
 
-Node *new_node_lvar(char *str)
+LVar *find_lvar(Token *token)
 {
-  Node *node = new_node(ND_LVAR);
-  node->offset = (str[0] - 'a' + 1) * 8;
-  return node;
+  LVar *cur = locals;
+  for (LVar *var = locals; var; var = var->next)
+    if (token->len == var->len &&
+        !memcmp(token->str, var->name, var->len))
+      return var;
+  return NULL;
 }
 
 void *program()
@@ -193,7 +196,24 @@ Node *primary()
 
   Token *tok = consume_ident();
   if (tok)
-    return new_node_lvar(tok->str);
+  {
+    Node *node = new_node(ND_LVAR);
+    LVar *lvar = find_lvar(tok);
+    if (lvar)
+      node->offset = lvar->offset;
+    else
+    {
+      lvar = calloc(1, sizeof(LVar));
+      lvar->next = locals; // 連結リストの現在の先頭を自身の次のリストにする
+      lvar->name = tok->str;
+      lvar->len = tok->len;
+      lvar->offset = locals->offset + 8;
+      locals = lvar; // 連結リストの新しい先頭を自身にする
+
+      node->offset = lvar->offset;
+    }
+    return node;
+  }
   else
     return new_node_num(expect_number());
 }
