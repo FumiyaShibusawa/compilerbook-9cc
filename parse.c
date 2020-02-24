@@ -21,6 +21,14 @@ Token *consume_ident(void)
   return tok;
 }
 
+bool consume_return(void)
+{
+  if (token->kind != TK_RETURN)
+    return false;
+  token = token->next;
+  return true;
+}
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
 // それ以外の場合にはエラーを報告する。
 void expect(char *op)
@@ -90,7 +98,14 @@ void *program()
 
 Node *stmt()
 {
-  Node *node = expr();
+  Node *node;
+  if (consume_return())
+  {
+    node = new_node(ND_RETURN);
+    node->lhs = expr();
+  }
+  else
+    node = expr();
   expect(";");
   return node;
 }

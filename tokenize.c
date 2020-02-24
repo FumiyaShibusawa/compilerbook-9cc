@@ -43,10 +43,21 @@ bool start_with(char *lhs, char *rhs)
 
 bool is_alpha(char c)
 {
-  return ('a' <= c && c <= 'z');
+  return ('a' <= c && c <= 'z') ||
+         ('A' <= c && c <= 'Z');
 }
 
-// 入力文字列user_inputをトークナイズしてそれを返す
+bool is_alnum(char c)
+{
+  return is_alpha(c) && ('0' <= c && c <= '9') || ('_' == c);
+}
+
+bool is_return(char *op)
+{
+  return (memcmp(op, "return", 6) == 0 && !is_alnum(op[6]));
+}
+
+//a 入力文字列user_inputをトークナイズしてそれを返す
 Token *tokenize()
 {
   char *p = user_input;
@@ -75,6 +86,14 @@ Token *tokenize()
     if (strchr("+-*/()<>;=", *p))
     {
       cur = new_token(TK_RESERVED, cur, p++, 1);
+      continue;
+    }
+
+    // return keyword
+    if (is_return(p))
+    {
+      cur = new_token(TK_RETURN, cur, p, 6);
+      p += 6;
       continue;
     }
 
