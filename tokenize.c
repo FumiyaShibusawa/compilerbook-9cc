@@ -41,6 +41,11 @@ bool start_with(char *lhs, char *rhs)
   return memcmp(lhs, rhs, strlen(rhs)) == 0;
 }
 
+bool is_alpha(char c)
+{
+  return ('a' <= c && c <= 'z');
+}
+
 // 入力文字列user_inputをトークナイズしてそれを返す
 Token *tokenize()
 {
@@ -73,10 +78,13 @@ Token *tokenize()
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z')
+    // multi-letter identifier
+    if (is_alpha(*p))
     {
-      cur = new_token(TK_IDENT, cur, p++, 0);
-      cur->len = 1;
+      char *q = p++;
+      while (is_alpha(*p))
+        p++;
+      cur = new_token(TK_IDENT, cur, q, p - q);
       continue;
     }
 

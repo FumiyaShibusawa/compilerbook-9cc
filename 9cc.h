@@ -40,6 +40,7 @@ void error_at(char *loc, char *fmt, ...);
 void error(char *fmt, ...);
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 bool start_with(char *lhs, char *rhs);
+bool is_alpha(char c);
 Token *tokenize();
 
 /* parse.c */
@@ -70,6 +71,7 @@ struct Node
 };
 
 bool consume(char *op);
+Token *consume_ident(void);
 void expect(char *op);
 int expect_number(void);
 bool at_eof(void);
@@ -99,6 +101,19 @@ Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
+
+typedef struct LVar LVar;
+
+struct LVar
+{
+  LVar *next;
+  char *name;
+  int len;
+  int offset;
+};
+
+LVar *locals;
+LVar *find_lvar(Token *token);
 
 /* codegen.c */
 

@@ -44,5 +44,7 @@ try 1 '3 >= 3;'
 try 1 '5 >= 3;'
 
 try 29 'a=3+4;b=5*6-8;a+b;'
+try 8 'foo=3;bar=5;foo+bar;'
+try 58 'foo = 3 * 20 - (6 / 2); bar = 45 >= 10; foo + bar;'
 
 echo OK
