@@ -36,7 +36,7 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len)
   return tok;
 }
 
-bool start_with(char *lhs, char *rhs)
+bool starts_with(char *lhs, char *rhs)
 {
   return memcmp(lhs, rhs, strlen(rhs)) == 0;
 }
@@ -52,9 +52,17 @@ bool is_alnum(char c)
   return is_alpha(c) && ('0' <= c && c <= '9') || ('_' == c);
 }
 
-bool is_return(char *op)
+char *starts_with_reserved(char *p)
 {
-  return (memcmp(op, "return", 6) == 0 && !is_alnum(op[6]));
+  char *kw[] = {"if", "else", "return"};
+  int kw_size = sizeof(kw) / sizeof(kw[0]);
+  for (size_t i = 0; i < kw_size; i++)
+  {
+    int len = strlen(kw[i]);
+    if (starts_with(p, kw[i]) && !is_alnum(p[len]))
+      return kw[i];
+  }
+  return NULL;
 }
 
 //a 入力文字列user_inputをトークナイズしてそれを返す
@@ -74,8 +82,21 @@ Token *tokenize()
       continue;
     }
 
+    // keywords
+    char *kw = starts_with_reserved(p);
+    if (kw)
+    {
+      int len = strlen(kw);
+      cur = new_token(TK_RESERVED, cur, p, len);
+      p += len;
+      continue;
+    }
+
     // multi-letter punctuator
-    if (start_with(p, "==") || start_with(p, "!=") || start_with(p, ">=") || start_with(p, "<="))
+    if (starts_with(p, "==") ||
+        starts_with(p, "!=") ||
+        starts_with(p, ">=") ||
+        starts_with(p, "<="))
     {
       cur = new_token(TK_RESERVED, cur, p, 2);
       p += 2;
@@ -86,14 +107,6 @@ Token *tokenize()
     if (strchr("+-*/()<>;=", *p))
     {
       cur = new_token(TK_RESERVED, cur, p++, 1);
-      continue;
-    }
-
-    // return keyword
-    if (is_return(p))
-    {
-      cur = new_token(TK_RETURN, cur, p, 6);
-      p += 6;
       continue;
     }
 

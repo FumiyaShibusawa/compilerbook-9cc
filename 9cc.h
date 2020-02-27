@@ -11,7 +11,6 @@
 typedef enum
 {
   TK_RESERVED, // 記号
-  TK_RETURN,   // return
   TK_IDENT,    // 識別子
   TK_NUM,      // 整数トークン
   TK_EOF       // 入力の終わりを表すトークン
@@ -59,7 +58,8 @@ typedef enum
   ND_DIV,    // /
   ND_LVAR,   // ローカル変数
   ND_NUM,    // Integer
-  ND_RETURN  // return keyword
+  ND_RETURN, // return keyword
+  ND_IF      // if keyword
 } NodeKind;
 
 typedef struct Node Node;
@@ -68,6 +68,9 @@ struct Node
   NodeKind kind;
   Node *lhs;
   Node *rhs;
+  Node *cond;
+  Node *then;
+  Node *els;
   int val;    // ND_NUMの時のみ使う
   int offset; // ND_LVARの時のみ使い、ベースポインタからどのくらい離れているかを示す
 };
@@ -83,7 +86,9 @@ Node *new_node_num(int val);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
 //       program = stmt*
-//       stmt    = expr ";" | return expr ";"
+//       stmt    = expr ";"
+//                 | return expr ";"
+//                 | "if" "(" expr ")" stmt ("else" stmt)?
 //       expr    = assign
 //       assign  = equality ("=" assign)?
 //       equality = relational ("==" relational | "!=" relational)*
