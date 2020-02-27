@@ -102,9 +102,15 @@ Node *stmt()
     expect("(");
     node->cond = expr();
     expect(")");
+    expect("{");
     node->then = stmt();
+    expect("}");
     if (consume("else"))
+    {
+      expect("{");
       node->els = stmt();
+      expect("}");
+    }
     return node;
   }
   else

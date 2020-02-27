@@ -1,5 +1,7 @@
 #include "9cc.h"
 
+int labelseq = 1;
+
 void gen_lvar(Node *node)
 {
   if (node->kind != ND_LVAR)
@@ -14,11 +16,34 @@ void gen(Node *node)
 {
   switch (node->kind)
   {
+  case ND_IF:
+  {
+    int seq = labelseq++;
+    if (node->els)
+    {
+      gen(node->cond);
+      printf("  pop rax\n");
+      printf("  cmp rax, 0\n");
+      printf("  je .L.else.%d\n", seq);
+      gen(node->then);
+      printf("  jmp .L.return.main\n");
+      printf(".L.else.%d:\n", seq);
+      gen(node->els);
+    }
+    else
+    {
+      gen(node->cond);
+      printf("  pop rax\n");
+      printf("  cmp rax, 0\n");
+      printf("  jmp .L.return.main\n");
+      gen(node->then);
+    }
+    return;
+  }
   case ND_RETURN:
     gen(node->lhs);
-    printf("  mov rsp, rbp\n");
-    printf("  pop rbp\n");
-    printf("  ret\n");
+    printf("  pop rax\n");
+    printf("  jmp .L.return.main\n");
     return;
   case ND_NUM:
     printf("  push %d\n", node->val);

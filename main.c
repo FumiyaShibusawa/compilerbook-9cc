@@ -14,6 +14,7 @@ int main(int argc, char **argv)
   printf(".global main\n");
   printf("main:\n");
 
+  // Prologue
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
   printf("  sub rsp, %d\n", locals->offset);
@@ -24,6 +25,9 @@ int main(int argc, char **argv)
     printf("  pop rax\n");
   }
 
+  // Epilogue
+  printf("  jmp .L.return.main\n");
+  printf(".L.return.main:\n");
   printf("  mov rsp, rbp\n");
   printf("  pop rbp\n");
   printf("  ret\n");

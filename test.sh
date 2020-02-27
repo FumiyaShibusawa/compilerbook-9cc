@@ -48,4 +48,9 @@ try 8 'foo=3;bar=5;foo+bar;'
 try 58 'foo = 3 * 20 - (6 / 2); bar = 45 >= 10; foo + bar;'
 try 5 'foo = 5;return foo;'
 
+try 1 'if (10 >= 5) { return 1; }'
+try 1 'if (10 >= 5) { return 1; } else { return 2; }'
+try 1 'if (10 >= 5) { 1; } else { 2; }'
+try 2 'foo = 10; if (foo < 5) { bar = 1; } else { bar = 2; } return bar;'
+
 echo OK
