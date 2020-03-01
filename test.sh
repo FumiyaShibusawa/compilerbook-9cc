@@ -53,4 +53,6 @@ try 1 'if (10 >= 5) { return 1; } else { return 2; }'
 try 1 'if (10 >= 5) { 1; } else { 2; }'
 try 2 'foo = 10; if (foo < 5) { bar = 1; } else { bar = 2; } return bar;'
 
+try 10 'count = 0; while (count < 10) { count = count + 1; }; count;'
+
 echo OK
