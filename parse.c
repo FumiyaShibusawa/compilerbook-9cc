@@ -123,6 +123,29 @@ Node *stmt()
     node->then = stmt();
     expect("}");
   }
+  else if (consume("for"))
+  {
+    node = new_node(ND_FOR);
+    expect("(");
+    if (!consume(";"))
+    {
+      node->init = expr();
+      expect(";");
+    }
+    if (!consume(";"))
+    {
+      node->cond = expr();
+      expect(";");
+    }
+    if (!consume(")"))
+    {
+      node->inc = expr();
+      expect(")");
+    }
+    expect("{");
+    node->then = stmt();
+    expect("}");
+  }
   else
     node = expr();
   expect(";");
