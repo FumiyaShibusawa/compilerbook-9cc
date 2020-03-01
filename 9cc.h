@@ -59,7 +59,8 @@ typedef enum
   ND_LVAR,   // ローカル変数
   ND_NUM,    // Integer
   ND_RETURN, // return keyword
-  ND_IF      // if keyword
+  ND_IF,     // if keyword
+  ND_WHILE   // while keyword
 } NodeKind;
 
 typedef struct Node Node;
@@ -89,6 +90,7 @@ Node *new_node_num(int val);
 //       stmt    = expr ";"
 //                 | return expr ";"
 //                 | "if" "(" expr ")" stmt ("else" stmt)?
+//                 | "while" "(" expr ")" stmt
 //       expr    = assign
 //       assign  = equality ("=" assign)?
 //       equality = relational ("==" relational | "!=" relational)*
