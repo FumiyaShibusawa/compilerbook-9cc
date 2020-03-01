@@ -55,4 +55,6 @@ try 2 'foo = 10; if (foo < 5) { bar = 1; } else { bar = 2; } return bar;'
 
 try 10 'count = 0; while (count < 10) { count = count + 1; }; count;'
 
+try 43 'count = 0; for (i = 0; i < 43; i = i + 1) { count = count + 1; }; count;'
+
 echo OK

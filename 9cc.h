@@ -60,7 +60,8 @@ typedef enum
   ND_NUM,    // Integer
   ND_RETURN, // return keyword
   ND_IF,     // if keyword
-  ND_WHILE   // while keyword
+  ND_WHILE,  // while keyword
+  ND_FOR     // for keyword
 } NodeKind;
 
 typedef struct Node Node;
@@ -69,9 +70,14 @@ struct Node
   NodeKind kind;
   Node *lhs;
   Node *rhs;
+
+  // for "while", "if", "for"
+  Node *init;
   Node *cond;
   Node *then;
   Node *els;
+  Node *inc;
+
   int val;    // ND_NUMの時のみ使う
   int offset; // ND_LVARの時のみ使い、ベースポインタからどのくらい離れているかを示す
 };
@@ -91,6 +97,7 @@ Node *new_node_num(int val);
 //                 | return expr ";"
 //                 | "if" "(" expr ")" stmt ("else" stmt)?
 //                 | "while" "(" expr ")" stmt
+//                 | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //       expr    = assign
 //       assign  = equality ("=" assign)?
 //       equality = relational ("==" relational | "!=" relational)*

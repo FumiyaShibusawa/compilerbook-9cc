@@ -53,6 +53,26 @@ void gen(Node *node)
     printf(".L.break.%d:\n", seq);
     return;
   }
+  case ND_FOR:
+  {
+    int seq = labelseq++;
+    if (node->init)
+      gen(node->init);
+    printf(".L.begin.%d:\n", seq);
+    if (node->cond)
+    {
+      gen(node->cond);
+      printf("  pop rax\n");
+      printf("  cmp rax, 0\n");
+      printf("  je .L.break.%d\n", seq);
+    }
+    gen(node->then);
+    if (node->inc)
+      gen(node->inc);
+    printf("  jmp .L.begin.%d\n", seq);
+    printf(".L.break.%d:\n", seq);
+    return;
+  }
   case ND_RETURN:
     gen(node->lhs);
     printf("  pop rax\n");
