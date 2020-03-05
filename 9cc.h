@@ -61,7 +61,9 @@ typedef enum
   ND_RETURN, // return keyword
   ND_IF,     // if keyword
   ND_WHILE,  // while keyword
-  ND_FOR     // for keyword
+  ND_FOR,    // for keyword
+  ND_BLOCK,  // block
+  ND_NULL    // empty statement
 } NodeKind;
 
 typedef struct Node Node;
@@ -77,6 +79,9 @@ struct Node
   Node *then;
   Node *els;
   Node *inc;
+
+  Node *body; // statements in block
+  Node *next; // next node
 
   int val;    // ND_NUMの時のみ使う
   int offset; // ND_LVARの時のみ使い、ベースポインタからどのくらい離れているかを示す
@@ -98,6 +103,7 @@ Node *new_node_num(int val);
 //                 | "if" "(" expr ")" stmt ("else" stmt)?
 //                 | "while" "(" expr ")" stmt
 //                 | "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//                 | "{" stmt* "}"
 //       expr    = assign
 //       assign  = equality ("=" assign)?
 //       equality = relational ("==" relational | "!=" relational)*
