@@ -17,16 +17,16 @@ try() {
   fi
 }
 
-try 0 '0;'
-try 42 '42;'
-try 2 '1+1;'
-try 51 '5-21+67;'
-try 233 '10 - 34 + 1;'
-try 7 '1 + 1 * (3 + 3);'
-try 3 '(3 + 4)/2;'
-try 253 '-3;'
-try 7 '+7;'
-try 200 '-10*(-20);'
+try 0 'return 0;'
+try 42 'return 42;'
+try 2 'return 1+1;'
+try 51 'return 5-21+67;'
+try 233 'return 10 - 34 + 1;'
+try 7 'return 1 + 1 * (3 + 3);'
+try 3 'return (3 + 4)/2;'
+try 253 'return -3;'
+try 7 'return +7;'
+try 200 'return -10*(-20);'
 
 try 0 '0 == 1;'
 try 1 '1 == 1;'
@@ -48,13 +48,15 @@ try 8 'foo=3;bar=5;foo+bar;'
 try 58 'foo = 3 * 20 - (6 / 2); bar = 45 >= 10; foo + bar;'
 try 5 'foo = 5;return foo;'
 
-try 1 'if (10 >= 5) { return 1; }'
-try 1 'if (10 >= 5) { return 1; } else { return 2; }'
-try 1 'if (10 >= 5) { 1; } else { 2; }'
-try 2 'foo = 10; if (foo < 5) { bar = 1; } else { bar = 2; } return bar;'
+try 1 'if (10 >= 5) { return 1; };'
+try 1 'if (10 >= 5) { return 1; } else { return 2; };'
+try 1 'if (10 >= 5) { 1; } else { 2; };'
+try 2 'foo = 10; if (foo < 5) { bar = 1; } else { bar = 2; }; return bar;'
 
 try 10 'count = 0; while (count < 10) { count = count + 1; }; count;'
 
 try 43 'count = 0; for (i = 0; i < 43; i = i + 1) { count = count + 1; }; count;'
+try 6 '{ 1 + 5; };'
+try 20 '{ 1 + 5; 4 * 5; };'
 
 echo OK

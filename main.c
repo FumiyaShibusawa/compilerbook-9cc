@@ -22,11 +22,9 @@ int main(int argc, char **argv)
   for (size_t i = 0; code[i]; i++)
   {
     gen(code[i]);
-    printf("  pop rax\n");
   }
 
   // Epilogue
-  printf("  jmp .L.return.main\n");
   printf(".L.return.main:\n");
   printf("  mov rsp, rbp\n");
   printf("  pop rbp\n");
