@@ -98,7 +98,7 @@ Node *stmt()
     expect(";");
     return node;
   }
-  else if (consume("if"))
+  if (consume("if"))
   {
     node = new_node(ND_IF);
     expect("(");
@@ -109,7 +109,7 @@ Node *stmt()
       node->els = stmt();
     return node;
   }
-  else if (consume("while"))
+  if (consume("while"))
   {
     node = new_node(ND_WHILE);
     expect("(");
@@ -118,7 +118,7 @@ Node *stmt()
     node->then = stmt();
     return node;
   }
-  else if (consume("for"))
+  if (consume("for"))
   {
     node = new_node(ND_FOR);
     expect("(");
@@ -140,7 +140,7 @@ Node *stmt()
     node->then = stmt();
     return node;
   }
-  else if (consume("{"))
+  if (consume("{"))
   {
     node = new_node(ND_BLOCK);
     Node head = {};
@@ -153,13 +153,13 @@ Node *stmt()
     node->body = head.next;
     return node;
   }
-  else if (consume(";"))
+  if (consume(";"))
   {
     node = new_node(ND_NULL);
     return node;
   }
-  else
-    node = expr();
+
+  node = expr();
   expect(";");
   return node;
 }
