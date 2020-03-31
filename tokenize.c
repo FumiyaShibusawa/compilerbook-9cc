@@ -114,7 +114,7 @@ Token *tokenize()
     if (is_alpha(*p))
     {
       char *q = p++;
-      while (is_alpha(*p))
+      while (is_alpha(*p) || isdigit(*p))
         p++;
       cur = new_token(TK_IDENT, cur, q, p - q);
       continue;

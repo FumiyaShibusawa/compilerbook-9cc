@@ -81,6 +81,10 @@ void gen(Node *node)
     for (Node *var = node->body; var; var = var->next)
       gen(var);
     return;
+  case ND_FUNCALL:
+    printf("  call %s\n", node->funcname);
+    printf("  push rax\n");
+    return;
   case ND_RETURN:
     gen(node->lhs);
     printf("  pop rax\n");
