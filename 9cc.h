@@ -63,7 +63,8 @@ typedef enum
   ND_WHILE,  // while keyword
   ND_FOR,    // for keyword
   ND_BLOCK,  // block
-  ND_NULL    // empty statement
+  ND_NULL,   // empty statement
+  ND_FUNCALL // function call
 } NodeKind;
 
 typedef struct Node Node;
@@ -83,6 +84,9 @@ struct Node
   Node *body; // statements in block
   Node *next; // next node
 
+  // function call
+  char *funcname;
+
   int val;    // ND_NUMの時のみ使う
   int offset; // ND_LVARの時のみ使い、ベースポインタからどのくらい離れているかを示す
 };
@@ -97,21 +101,22 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
-//       program = stmt*
-//       stmt    = expr ";"
-//                 | return expr ";"
-//                 | "if" "(" expr ")" stmt ("else" stmt)?
-//                 | "while" "(" expr ")" stmt
-//                 | "for" "(" expr? ";" expr? ";" expr? ")" stmt
-//                 | "{" stmt* "}"
-//       expr    = assign
-//       assign  = equality ("=" assign)?
-//       equality = relational ("==" relational | "!=" relational)*
+//       program    = stmt*
+//       stmt       = expr ";"
+//                    | return expr ";"
+//                    | "if" "(" expr ")" stmt ("else" stmt)?
+//                    | "while" "(" expr ")" stmt
+//                    | "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//                    | "{" stmt* "}"
+//       expr       = assign
+//       assign     = equality ("=" assign)?
+//       equality   = relational ("==" relational | "!=" relational)*
 //       relational = add ("<" add | "<=" add | ">" add | ">=" add)*
-//       add    = mul ("+" mul | "-" mul)*
-//       mul     = unary ("*" unary | "/" unary)*
-//       unary   = ("+" | "-")? primary
-//       primary = num | ident | "(" expr ")"
+//       add        = mul ("+" mul | "-" mul)*
+//       mul        = unary ("*" unary | "/" unary)*
+//       unary      = ("+" | "-")? primary
+//       primary    = num | ident args? | "(" expr ")"
+//       args       = "(" ")"
 Node *code[100];
 void *program();
 Node *stmt();

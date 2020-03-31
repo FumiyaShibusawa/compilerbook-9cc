@@ -8,6 +8,8 @@ int main(int argc, char **argv)
   user_input = argv[1];
   // トークナイズする
   token = tokenize();
+  // for (Token *var = token; var; var = var->next)
+  //   printf("token->str: %s token->len: %d\n", var->str, var->len);
   locals = calloc(1, sizeof(LVar));
   program();
   printf(".intel_syntax noprefix\n");

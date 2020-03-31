@@ -1,11 +1,17 @@
 #!/bin/bash
 
+cat <<EOF | gcc -xc -c -o tmp2.o -
+int ret3() { return 3; }
+int ret5() { return 5; }
+EOF
+
+
 try() {
   expected="$1"
   input="$2"
 
   ./9cc "$input" > tmp.s
-  gcc -o tmp tmp.s
+  gcc -static -o tmp tmp.s tmp2.o
   ./tmp
   actual="$?"
 
@@ -16,6 +22,9 @@ try() {
     exit 1
   fi
 }
+
+try 3 'return ret3();'
+try 5 'return ret5();'
 
 try 0 'return 0;'
 try 42 'return 42;'
@@ -47,6 +56,7 @@ try 29 'a=3+4;b=5*6-8;a+b;'
 try 8 'foo=3;bar=5;foo+bar;'
 try 58 'foo = 3 * 20 - (6 / 2); bar = 45 >= 10; foo + bar;'
 try 5 'foo = 5;return foo;'
+try 10 'foo1 = 10; foo1;'
 
 try 1 'if (10 >= 5) { return 1; };'
 try 1 'if (10 >= 5) { return 1; } else { return 2; };'
