@@ -3,6 +3,12 @@
 cat <<EOF | gcc -xc -c -o tmp2.o -
 int ret3() { return 3; }
 int ret5() { return 5; }
+int add(int x, int y) { return x + y; }
+int sub(int x, int y) { return x - y; }
+
+int add6(int a, int b, int c, int d, int e, int f) {
+  return a + b + c + d + e + f;
+}
 EOF
 
 
@@ -11,7 +17,7 @@ try() {
   input="$2"
 
   ./9cc "$input" > tmp.s
-  gcc -static -o tmp tmp.s tmp2.o
+  gcc -o tmp tmp.s tmp2.o
   ./tmp
   actual="$?"
 
@@ -25,6 +31,10 @@ try() {
 
 try 3 'return ret3();'
 try 5 'return ret5();'
+
+try 4 'return add(1, 3);'
+try 6 'return sub(10, 4);'
+try 21 'return add6(1, 2, 3, 4, 5, 6);'
 
 try 0 'return 0;'
 try 42 'return 42;'

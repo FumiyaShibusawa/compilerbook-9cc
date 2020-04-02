@@ -86,6 +86,7 @@ struct Node
 
   // function call
   char *funcname;
+  Node *args;
 
   int val;    // ND_NUMの時のみ使う
   int offset; // ND_LVARの時のみ使い、ベースポインタからどのくらい離れているかを示す
