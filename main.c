@@ -8,28 +8,24 @@ int main(int argc, char **argv)
   user_input = argv[1];
   // トークナイズする
   token = tokenize();
+  // デバッグ用
   // for (Token *var = token; var; var = var->next)
-  //   printf("token->str: %s token->len: %d\n", var->str, var->len);
-  locals = calloc(1, sizeof(LVar));
-  program();
-  printf(".intel_syntax noprefix\n");
-  printf(".global main\n");
-  printf("main:\n");
+  //   printf("token->kind: %d token->str: %s token->len: %d\n", var->kind, var->str, var->len);
+  Function *prog = program();
 
-  // Prologue
-  printf("  push rbp\n");
-  printf("  mov rbp, rsp\n");
-  printf("  sub rsp, %d\n", locals->offset);
-
-  for (size_t i = 0; code[i]; i++)
+  // 関数ごとのローカル変数用のメモリサイズを計算する
+  for (Function *fn = prog; fn; fn = fn->next)
   {
-    gen(code[i]);
-  }
+    int offset = 0;
+    for (LVar *var = prog->locals; var; var = var->next)
+    {
+      offset += 8;
+      var->offset = offset;
+    }
+    fn->stack_size = offset;
+  };
 
-  // Epilogue
-  printf(".L.return.main:\n");
-  printf("  mov rsp, rbp\n");
-  printf("  pop rbp\n");
-  printf("  ret\n");
+  codegen(prog);
+
   return 0;
 }
