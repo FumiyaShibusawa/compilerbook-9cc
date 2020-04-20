@@ -67,6 +67,16 @@ typedef enum
   ND_FUNCALL // function call
 } NodeKind;
 
+typedef struct LVar LVar;
+
+struct LVar
+{
+  LVar *next;
+  char *name;
+  int len;
+  int offset;
+};
+
 typedef struct Node Node;
 struct Node
 {
@@ -88,14 +98,15 @@ struct Node
   char *funcname;
   Node *args;
 
-  int val;    // ND_NUMの時のみ使う
-  int offset; // ND_LVARの時のみ使い、ベースポインタからどのくらい離れているかを示す
+  int val;   // ND_NUMの時のみ使う
+  LVar *var; // ND_LVARの時のみ使い、変数に関する情報を格納する
 };
 
 bool consume(char *op);
 Token *consume_ident(void);
 void expect(char *op);
 int expect_number(void);
+char *expect_ident(void);
 bool at_eof(void);
 Node *new_node(NodeKind kind);
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
@@ -118,8 +129,21 @@ Node *new_node_num(int val);
 //       unary      = ("+" | "-")? primary
 //       primary    = num | ident args? | "(" expr ")"
 //       args       = "(" ")"
-Node *code[100];
-void *program();
+
+typedef struct Function Function;
+
+struct Function
+{
+  Function *next;
+  char *name;
+  Node *node;
+  LVar *locals;
+  int stack_size;
+};
+
+Function *program(void);
+void codegen();
+Function *function(void);
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -129,16 +153,6 @@ Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
-
-typedef struct LVar LVar;
-
-struct LVar
-{
-  LVar *next;
-  char *name;
-  int len;
-  int offset;
-};
 
 LVar *locals;
 LVar *find_lvar(Token *token);

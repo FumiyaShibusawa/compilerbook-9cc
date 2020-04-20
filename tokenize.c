@@ -65,7 +65,7 @@ char *starts_with_reserved(char *p)
   return NULL;
 }
 
-//a 入力文字列user_inputをトークナイズしてそれを返す
+// 入力文字列user_inputをトークナイズしてそれを返す
 Token *tokenize()
 {
   char *p = user_input;
