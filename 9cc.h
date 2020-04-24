@@ -71,10 +71,17 @@ typedef struct LVar LVar;
 
 struct LVar
 {
-  LVar *next;
   char *name;
   int len;
   int offset;
+};
+
+typedef struct LVarList LVarList;
+
+struct LVarList
+{
+  LVarList *next;
+  LVar *var;
 };
 
 typedef struct Node Node;
@@ -102,6 +109,18 @@ struct Node
   LVar *var; // ND_LVARの時のみ使い、変数に関する情報を格納する
 };
 
+typedef struct Function Function;
+
+struct Function
+{
+  Function *next;
+  char *name;
+  Node *node;
+  LVarList *params;
+  LVarList *locals;
+  int stack_size;
+};
+
 bool consume(char *op);
 Token *consume_ident(void);
 void expect(char *op);
@@ -111,6 +130,11 @@ bool at_eof(void);
 Node *new_node(NodeKind kind);
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+Node *new_var_node(LVar *var);
+LVar *find_lvar(Token *token);
+LVar *new_lvar(char *name);
+
+LVarList *locals;
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
 //       program    = stmt*
@@ -130,19 +154,8 @@ Node *new_node_num(int val);
 //       primary    = num | ident args? | "(" expr ")"
 //       args       = "(" ")"
 
-typedef struct Function Function;
-
-struct Function
-{
-  Function *next;
-  char *name;
-  Node *node;
-  LVar *locals;
-  int stack_size;
-};
-
 Function *program(void);
-void codegen();
+LVarList *read_func_params(void);
 Function *function(void);
 Node *stmt();
 Node *expr();
@@ -154,12 +167,10 @@ Node *mul();
 Node *unary();
 Node *primary();
 
-LVar *locals;
-LVar *find_lvar(Token *token);
-
 /* codegen.c */
 
 void gen(Node *node);
+void codegen();
 
 /* main.c */
 
