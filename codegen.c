@@ -7,7 +7,7 @@ char *funcname;
 void gen_lvar(Node *node)
 {
   if (node->kind != ND_LVAR)
-    error("左辺値が変数ではありません");
+    error_tok(node->tok, "左辺値が変数ではありません");
   printf("  mov rax, rbp\n");
   printf("  sub rax, %d\n", node->var->offset);
   printf("  push rax\n");

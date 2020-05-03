@@ -36,8 +36,9 @@ struct Token
 };
 
 Token *token;
-void error_at(char *loc, char *fmt, ...);
 void error(char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
+void error_tok(Token *tok, char *fmt, ...);
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 bool start_with(char *lhs, char *rhs);
 bool is_alpha(char c);
@@ -93,6 +94,7 @@ struct Node
 
   Node *body; // statements in block
   Node *next; // next node
+  Token *tok;
 
   // function call
   char *funcname;
@@ -102,15 +104,15 @@ struct Node
   LVar *var; // ND_LVARの時のみ使い、変数に関する情報を格納する
 };
 
-bool consume(char *op);
+Token *consume(char *op);
 Token *consume_ident(void);
 void expect(char *op);
 int expect_number(void);
 char *expect_ident(void);
 bool at_eof(void);
-Node *new_node(NodeKind kind);
-Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
-Node *new_node_num(int val);
+Node *new_node(NodeKind kind, Token *tok);
+Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok);
+Node *new_node_num(int val, Token *tok);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
 //       program    = stmt*

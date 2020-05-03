@@ -13,10 +13,8 @@ void error(char *fmt, ...)
   exit(1);
 }
 
-void error_at(char *loc, char *fmt, ...)
+void verror_at(char *loc, char *fmt, va_list ap)
 {
-  va_list ap;
-  va_start(ap, fmt);
   int pos = loc - user_input;
   fprintf(stderr, "%s\n", user_input);
   fprintf(stderr, "%*s", pos, "");
@@ -24,6 +22,20 @@ void error_at(char *loc, char *fmt, ...)
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
   exit(1);
+}
+
+void error_at(char *loc, char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  verror_at(loc, fmt, ap);
+}
+
+void error_tok(Token *tok, char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  verror_at(tok->str, fmt, ap);
 }
 
 Token *new_token(TokenKind kind, Token *cur, char *str, int len)
