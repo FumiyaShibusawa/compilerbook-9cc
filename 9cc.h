@@ -57,6 +57,8 @@ typedef enum
   ND_SUB,    // -
   ND_MUL,    // *
   ND_DIV,    // /
+  ND_ADDR,   // unary &
+  ND_DEREF,  // unary *
   ND_LVAR,   // ローカル変数
   ND_NUM,    // Integer
   ND_RETURN, // return keyword
@@ -112,6 +114,7 @@ char *expect_ident(void);
 bool at_eof(void);
 Node *new_node(NodeKind kind, Token *tok);
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok);
+Node *new_unary(NodeKind kind, Node *lhs, Token *tok);
 Node *new_node_num(int val, Token *tok);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
@@ -128,7 +131,7 @@ Node *new_node_num(int val, Token *tok);
 //       relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 //       add        = mul ("+" mul | "-" mul)*
 //       mul        = unary ("*" unary | "/" unary)*
-//       unary      = ("+" | "-")? primary
+//       unary      = ("+" | "-" | "*" | "&")? unary
 //       primary    = num | ident args? | "(" expr ")"
 //       args       = "(" ")"
 
