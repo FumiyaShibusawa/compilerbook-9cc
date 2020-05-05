@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct Type Type;
+
 /* tokenize.c */
 
 // NOTE: enum は定数を一括で宣言できる型
@@ -48,26 +50,29 @@ Token *tokenize();
 
 typedef enum
 {
-  ND_ASSIGN, // =
-  ND_EQ,     // ==
-  ND_NE,     // !=
-  ND_LE,     // <=
-  ND_LT,     // <
-  ND_ADD,    // +
-  ND_SUB,    // -
-  ND_MUL,    // *
-  ND_DIV,    // /
-  ND_ADDR,   // unary &
-  ND_DEREF,  // unary *
-  ND_LVAR,   // ローカル変数
-  ND_NUM,    // Integer
-  ND_RETURN, // return keyword
-  ND_IF,     // if keyword
-  ND_WHILE,  // while keyword
-  ND_FOR,    // for keyword
-  ND_BLOCK,  // block
-  ND_NULL,   // empty statement
-  ND_FUNCALL // function call
+  ND_ASSIGN,   // =
+  ND_EQ,       // ==
+  ND_NE,       // !=
+  ND_LE,       // <=
+  ND_LT,       // <
+  ND_ADD,      // num + num
+  ND_PTR_ADD,  // ptr + num || num + ptr
+  ND_SUB,      // num - num
+  ND_PTR_SUB,  // ptr - num || num - ptr
+  ND_PTR_DIFF, // ptr - ptr
+  ND_MUL,      // *
+  ND_DIV,      // /
+  ND_ADDR,     // unary &
+  ND_DEREF,    // unary *
+  ND_LVAR,     // ローカル変数
+  ND_NUM,      // Integer
+  ND_RETURN,   // return keyword
+  ND_IF,       // if keyword
+  ND_WHILE,    // while keyword
+  ND_FOR,      // for keyword
+  ND_BLOCK,    // block
+  ND_NULL,     // empty statement
+  ND_FUNCALL   // function call
 } NodeKind;
 
 typedef struct LVar LVar;
@@ -96,6 +101,7 @@ struct Node
 
   Node *body; // statements in block
   Node *next; // next node
+  Type *ty;   // Type, e.g. int, pointer to int
   Token *tok;
 
   // function call
@@ -147,20 +153,39 @@ struct Function
 };
 
 Function *program(void);
-void codegen();
+void codegen(Function *prog);
 Function *function(void);
-Node *stmt();
-Node *expr();
-Node *assign();
-Node *equality();
-Node *relational();
-Node *add();
-Node *mul();
-Node *unary();
-Node *primary();
+Node *stmt(void);
+Node *stmt2(void);
+Node *expr(void);
+Node *assign(void);
+Node *equality(void);
+Node *relational(void);
+Node *add(void);
+Node *mul(void);
+Node *unary(void);
+Node *primary(void);
 
 LVar *locals;
 LVar *find_lvar(Token *token);
+
+/* type.c */
+
+typedef enum
+{
+  TY_INT,
+  TY_PTR
+} TypeKind;
+
+struct Type
+{
+  TypeKind kind;
+  Type *base;
+};
+
+bool is_integer(Type *ty);
+Type *pointer_to(Type *base);
+void add_type(Node *node);
 
 /* codegen.c */
 

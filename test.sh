@@ -81,10 +81,11 @@ try 20 'main() { { 1 + 5; 4 * 5; }; }'
 
 try 3 'main() { x = 3; return *&x; }'
 try 5 'main() { x = 5; y = &x; z = &y; return **z; }'
-try 7 'main() { x = 4; y = 7; return *(&x + 8); }'
-try 3 'main() { x=3; y=5; return *(&y-8); }'
+try 7 'main() { x = 4; y = 7; return *(&x + 1); }'
+try 3 'main() { x=3; y=5; return *(&y-1); }'
 try 5 'main() { x=3; y=&x; *y=5; return x; }'
-try 7 'main() { x=3; y=5; *(&x+8)=7; return y; }'
-try 7 'main() { x=3; y=5; *(&y-8)=7; return x; }'
+try 7 'main() { x=3; y=5; *(&x+1)=7; return y; }'
+try 7 'main() { x=3; y=5; *(&y-1)=7; return x; }'
+try 2 'main() { x=3; return (&x+2)-&x; }'
 
 echo OK
