@@ -188,8 +188,22 @@ void gen(Node *node)
   case ND_ADD:
     printf("  add rax, rdi\n");
     break;
+  case ND_PTR_ADD:
+    printf("  imul rdi, 8\n");
+    printf("  add rax, rdi\n");
+    break;
   case ND_SUB:
     printf("  sub rax, rdi\n");
+    break;
+  case ND_PTR_SUB:
+    printf("  imul rdi, 8\n");
+    printf("  sub rax, rdi\n");
+    break;
+  case ND_PTR_DIFF:
+    printf("  sub rax, rdi\n");
+    printf("  cqo\n");
+    printf("  mov rdi, 8\n");
+    printf("  idiv rdi\n");
     break;
   case ND_MUL:
     printf("  imul rax, rdi\n");
@@ -199,7 +213,7 @@ void gen(Node *node)
     printf("  idiv rdi\n");
     break;
   default:
-    error("パースできません: node->kind: %d, node->str: %s\n", node->kind, node->val);
+    error_tok(node->tok, "No effective NodeKind found for the token");
   }
 
   printf("  push rax\n");
