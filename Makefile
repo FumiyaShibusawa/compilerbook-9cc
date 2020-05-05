@@ -1,5 +1,5 @@
 CFLAGS=-std=c11 -g -static
-SRCS=$(wildcard *c)
+SRCS=$(filter-out sample%, $(wildcard *c))
 OBJS=$(SRCS:.c=.o)
 
 9cc: $(OBJS)
