@@ -88,4 +88,8 @@ try 7 'main() { x=3; y=5; *(&x+1)=7; return y; }'
 try 7 'main() { x=3; y=5; *(&y-1)=7; return x; }'
 try 2 'main() { x=3; return (&x+2)-&x; }'
 
+try 7 'main() { return add2(3,4); } add2(x,y) { return x+y; }'
+try 1 'main() { return sub2(4,3); } sub2(x,y) { return x-y; }'
+try 55 'main() { return fib(9); } fib(x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
+
 echo OK
