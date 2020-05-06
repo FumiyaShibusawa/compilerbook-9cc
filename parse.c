@@ -92,12 +92,30 @@ Node *new_node_num(int val, Token *tok)
   return node;
 }
 
-LVar *find_lvar(Token *token)
+Node *new_node_lvar(LVar *lvar, Token *tok)
 {
-  for (LVar *var = locals; var; var = var->next)
-    if (token->len == var->len &&
-        !memcmp(token->str, var->name, var->len))
-      return var;
+  Node *node = new_node(ND_LVAR, tok);
+  node->var = lvar;
+  return node;
+}
+
+LVar *new_lvar(char *name)
+{
+  LVar *var = calloc(1, sizeof(LVar));
+  var->name = name;
+  LVarList *vl = calloc(1, sizeof(LVarList));
+  vl->var = var;
+  vl->next = locals;
+  locals = vl;
+  return var;
+}
+
+LVar *find_lvar(Token *tok)
+{
+  for (LVarList *vl = locals; vl; vl = vl->next)
+    if (strlen(vl->var->name) == tok->len &&
+        !strncmp(tok->str, vl->var->name, tok->len))
+      return vl->var;
   return NULL;
 }
 
@@ -113,12 +131,33 @@ Function *program(void)
   return head.next;
 }
 
+LVarList *read_func_params(void)
+{
+  if (consume(")"))
+    return NULL;
+
+  LVarList *head = calloc(1, sizeof(LVarList));
+  head->var = new_lvar(expect_ident());
+  LVarList *cur = head;
+
+  while (!consume(")"))
+  {
+    expect(",");
+    cur->next = calloc(1, sizeof(LVarList));
+    cur->next->var = new_lvar(expect_ident());
+    cur = cur->next;
+  }
+
+  return head;
+}
+
 Function *function(void)
 {
   locals = NULL;
-  char *name = expect_ident();
+  Function *fn = calloc(1, sizeof(Function));
+  fn->name = expect_ident();
   expect("(");
-  expect(")");
+  fn->params = read_func_params();
   expect("{");
   Node head = {};
   Node *cur = &head;
@@ -128,8 +167,6 @@ Function *function(void)
     cur = cur->next;
   }
 
-  Function *fn = calloc(1, sizeof(Function));
-  fn->name = name;
   fn->node = head.next;
   fn->locals = locals;
   return fn;
@@ -385,15 +422,12 @@ Node *primary()
     LVar *lvar = find_lvar(tok);
     if (!lvar)
     {
-      lvar = calloc(1, sizeof(LVar));
-      lvar->next = locals; // 連結リストの現在の先頭を自身の次のリストにする
-      lvar->name = tok->str;
-      lvar->len = tok->len;
-      locals = lvar; // 連結リストの新しい先頭を自身にする
+      char *name = calloc(1, sizeof(tok->len));
+      strncpy(name, tok->str, tok->len);
+      name[tok->len] = '\0';
+      lvar = new_lvar(name);
     }
-    Node *node = new_node(ND_LVAR, tok);
-    node->var = lvar;
-    return node;
+    return new_node_lvar(lvar, tok);
   }
   else
   {

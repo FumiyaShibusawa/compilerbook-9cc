@@ -79,10 +79,17 @@ typedef struct LVar LVar;
 
 struct LVar
 {
-  LVar *next;
   char *name;
   int len;
   int offset;
+};
+
+typedef struct LVarList LVarList;
+
+struct LVarList
+{
+  LVarList *next;
+  LVar *var;
 };
 
 typedef struct Node Node;
@@ -122,6 +129,9 @@ Node *new_node(NodeKind kind, Token *tok);
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok);
 Node *new_unary(NodeKind kind, Node *lhs, Token *tok);
 Node *new_node_num(int val, Token *tok);
+Node *new_node_lvar(LVar *lvar, Token *tok);
+LVar *new_lvar(char *name);
+LVar *find_lvar(Token *token);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
 //       program    = stmt*
@@ -147,8 +157,9 @@ struct Function
 {
   Function *next;
   char *name;
+  LVarList *params;
   Node *node;
-  LVar *locals;
+  LVarList *locals;
   int stack_size;
 };
 
@@ -166,8 +177,7 @@ Node *mul(void);
 Node *unary(void);
 Node *primary(void);
 
-LVar *locals;
-LVar *find_lvar(Token *token);
+LVarList *locals;
 
 /* type.c */
 
