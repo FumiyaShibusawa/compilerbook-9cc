@@ -72,7 +72,8 @@ typedef enum
   ND_FOR,      // for keyword
   ND_BLOCK,    // block
   ND_NULL,     // empty statement
-  ND_FUNCALL   // function call
+  ND_FUNCALL,  // function call
+  ND_EXPR_STMT // expression statement
 } NodeKind;
 
 typedef struct LVar LVar;
@@ -82,6 +83,7 @@ struct LVar
   char *name;
   int len;
   int offset;
+  Type *ty;
 };
 
 typedef struct LVarList LVarList;
@@ -119,6 +121,7 @@ struct Node
   LVar *var; // ND_LVARの時のみ使い、変数に関する情報を格納する
 };
 
+Token *peek(char *op);
 Token *consume(char *op);
 Token *consume_ident(void);
 void expect(char *op);
@@ -130,8 +133,8 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok);
 Node *new_unary(NodeKind kind, Node *lhs, Token *tok);
 Node *new_node_num(int val, Token *tok);
 Node *new_node_lvar(LVar *lvar, Token *tok);
-LVar *new_lvar(char *name);
-LVar *find_lvar(Token *token);
+LVar *new_lvar(char *name, Type *ty);
+LVar *find_lvar(Token *tok);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
 //       program    = stmt*
@@ -166,6 +169,7 @@ struct Function
 Function *program(void);
 void codegen(Function *prog);
 Function *function(void);
+Node *declaration(void);
 Node *stmt(void);
 Node *stmt2(void);
 Node *expr(void);
@@ -192,6 +196,8 @@ struct Type
   TypeKind kind;
   Type *base;
 };
+
+extern Type *int_type;
 
 bool is_integer(Type *ty);
 Type *pointer_to(Type *base);
