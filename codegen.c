@@ -33,6 +33,10 @@ void gen(Node *node)
   {
   case ND_NULL:
     return;
+  case ND_EXPR_STMT:
+    gen(node->lhs);
+    printf("  add rsp, 8\n");
+    return;
   case ND_IF:
   {
     int seq = labelseq++;
