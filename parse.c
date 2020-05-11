@@ -57,9 +57,7 @@ char *expect_ident(void)
 {
   if (token->kind != TK_IDENT)
     error_tok(token, "expected an identifier");
-  char *ident = calloc(1, sizeof(token->len));
-  strncpy(ident, token->str, token->len);
-  ident[token->len] = '\0';
+  char *ident = strndup(token->str, token->len);
   token = token->next;
   return ident;
 }
@@ -457,9 +455,7 @@ Node *primary()
     if (consume("("))
     {
       Node *node = new_node(ND_FUNCALL, tok);
-      node->funcname = calloc(1, sizeof(tok->len));
-      strncpy(node->funcname, tok->str, tok->len);
-      node->funcname[tok->len] = '\0';
+      node->funcname = strndup(tok->str, tok->len);
       node->args = func_args();
       return node;
     }
