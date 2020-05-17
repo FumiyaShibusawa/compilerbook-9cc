@@ -62,7 +62,7 @@ try 0 'int main() { 3 >= 5; }'
 try 1 'int main() { 3 >= 3; }'
 try 1 'int main() { 5 >= 3; }'
 
-try 29 'int main() { int a = 3 + 4; int b = 5 * 6 - 8; return a+b; }'
+try 29 'int main() { int a = 3 + 4; int b = 5 * 6 - 8; return a + b; }'
 try 8 'int main() { int foo = 3; int bar = 5; return foo+bar; }'
 try 58 'int main() { int foo = 3 * 20 - (6 / 2); int bar = 45 >= 10; return foo + bar; }'
 try 5 'int main() { int foo = 5; return foo; }'
@@ -79,10 +79,10 @@ try 6 'int main() { { 1 + 5; } }'
 try 20 'int main() { { 1 + 5; 4 * 5; } }'
 
 try 3 'int main() { int x = 3; return *&x; }'
-try 5 'int main() { int x = 5; int y = &x; int z = &y; return **z; }'
+try 5 'int main() { int x = 5; int y = &x; int **z = &y; return **z; }'
 try 7 'int main() { int x = 4; int y = 7; return *(&x + 1); }'
 try 3 'int main() { int x = 3; int y = 5; return *(&y - 1); }'
-try 5 'int main() { int x = 3; int y = &x; *y = 5; return x; }'
+try 5 'int main() { int x = 3; int *y = &x; *y = 5; return x; }'
 try 7 'int main() { int x = 3; int y = 5; *(&x + 1) = 7; return y; }'
 try 7 'int main() { int x = 3; int y = 5; *(&y - 1) = 7; return x; }'
 try 2 'int main() { int x = 3; return (&x + 2) - &x; }'
@@ -90,5 +90,11 @@ try 2 'int main() { int x = 3; return (&x + 2) - &x; }'
 try 7 'int main() { return add2(3, 4); } int add2(int x, int y) { return x + y; }'
 try 1 'int main() { return sub2(4, 3); } int sub2(int x, int y) { return x - y; }'
 try 55 'int main() { return fib(9); } int fib(int x) { if (x <= 1) return 1; return fib(x - 1) + fib(x - 2); }'
+
+try 3 'int main() { int x[2]; int *y=&x; *y=3; return *x; }'
+
+try 3 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *x; }'
+try 4 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *(x+1); }'
+try 5 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *(x+2); }'
 
 echo OK
