@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     int offset = 0;
     for (LVarList *vl = fn->locals; vl; vl = vl->next)
     {
-      offset += 8;
+      offset += vl->var->ty->size;
       vl->var->offset = offset;
     }
     fn->stack_size = offset;
