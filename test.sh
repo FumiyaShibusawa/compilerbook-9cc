@@ -93,8 +93,17 @@ try 55 'int main() { return fib(9); } int fib(int x) { if (x <= 1) return 1; ret
 
 try 3 'int main() { int x[2]; int *y=&x; *y=3; return *x; }'
 
-try 3 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *x; }'
-try 4 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *(x+1); }'
-try 5 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *(x+2); }'
+try 3 'int main() { int x[3]; *x = 3; *(x + 1) = 4; *(x + 2) = 5; return *x; }'
+try 4 'int main() { int x[3]; *x = 3; *(x + 1) = 4; *(x + 2) = 5; return *(x + 1); }'
+try 5 'int main() { int x[3]; *x = 3; *(x + 1) = 4; *(x + 2) = 5; return *(x + 2); }'
+
+try 0 'int main() { int x[2][3]; int *y = x; *y = 0; return **x; }'
+try 1 'int main() { int x[2][3]; int *y = x; *(y + 1) = 1; return *(*x + 1); }'
+try 2 'int main() { int x[2][3]; int *y = x; *(y + 2) = 2; return *(*x + 2); }'
+try 3 'int main() { int x[2][3]; int *y = x; *(y + 3) = 3; return **(x + 1); }'
+try 4 'int main() { int x[2][3]; int *y = x; *(y + 4) = 4; return *(*(x + 1) + 1); }'
+try 5 'int main() { int x[2][3]; int *y = x; *(y + 5) = 5; return *(*(x + 1) + 2); }'
+try 6 'int main() { int x[2][3]; int *y = x; *(y + 6) = 6; return **(x + 2); }'
+try 10 'int main() { int x[2][2][2]; int *y = x; *(y + 1) = 10; return *(**x + 1); }'
 
 echo OK
