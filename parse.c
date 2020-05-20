@@ -377,7 +377,7 @@ Node *new_add(Node *lhs, Node *rhs, Token *tok)
   if (lhs->ty->base && is_integer(rhs->ty))
     return new_binary(ND_PTR_ADD, lhs, rhs, tok);
   if (is_integer(lhs->ty) && rhs->ty->base)
-    return new_binary(ND_ADD, rhs, lhs, tok);
+    return new_binary(ND_PTR_ADD, rhs, lhs, tok);
   error_tok(tok, "invalid operands");
 }
 
@@ -437,10 +437,10 @@ Node *unary()
     return new_unary(ND_ADDR, unary(), tok);
   if (tok = consume("*"))
     return new_unary(ND_DEREF, unary(), tok);
-  return primary();
+  return postfix();
 }
 
-Node *func_args()
+static Node *func_args()
 {
   if (consume(")"))
     return NULL;
@@ -454,6 +454,20 @@ Node *func_args()
   }
   expect(")");
   return head;
+}
+
+Node *postfix(void)
+{
+  Node *node = primary();
+  Token *tok;
+
+  while (tok = consume("["))
+  {
+    Node *exp = new_add(node, expr(), tok);
+    expect("]");
+    node = new_unary(ND_DEREF, exp, tok);
+  }
+  return node;
 }
 
 Node *primary()

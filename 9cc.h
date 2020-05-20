@@ -180,6 +180,7 @@ Node *relational(void);
 Node *add(void);
 Node *mul(void);
 Node *unary(void);
+Node *postfix(void);
 Node *primary(void);
 
 LVarList *locals;
