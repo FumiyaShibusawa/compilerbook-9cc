@@ -472,13 +472,22 @@ Node *postfix(void)
 
 Node *primary()
 {
+  Token *tok;
+
   if (consume("("))
   {
     Node *node = expr();
     expect(")");
     return node;
   }
-  Token *tok;
+
+  if (tok = consume("sizeof"))
+  {
+    Node *node = unary();
+    add_type(node);
+    return new_node_num(node->ty->size, tok);
+  }
+
   if (tok = consume_ident())
   {
     if (consume("("))
@@ -488,16 +497,15 @@ Node *primary()
       node->args = func_args();
       return node;
     }
+
     LVar *lvar = find_lvar(tok);
     if (!lvar)
       error_tok(tok, "undefined variable");
     return new_node_lvar(lvar, tok);
   }
-  else
-  {
-    tok = token;
-    if (tok->kind != TK_NUM)
-      error_tok(tok, "expected expression");
-    return new_node_num(expect_number(), tok);
-  }
+
+  tok = token;
+  if (tok->kind != TK_NUM)
+    error_tok(tok, "expected expression");
+  return new_node_num(expect_number(), tok);
 }

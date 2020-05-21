@@ -152,7 +152,7 @@ LVar *find_lvar(Token *tok);
 //       add        = mul ("+" mul | "-" mul)*
 //       mul        = unary ("*" unary | "/" unary)*
 //       unary      = ("+" | "-" | "*" | "&")? unary
-//       primary    = num | ident args? | "(" expr ")"
+//       primary    = num | ident args? | "(" expr ")" | "sizeof" unary
 //       args       = "(" ")"
 
 typedef struct Function Function;
