@@ -65,7 +65,7 @@ typedef enum
   ND_DIV,      // /
   ND_ADDR,     // unary &
   ND_DEREF,    // unary *
-  ND_LVAR,     // ローカル変数
+  ND_VAR,      // 変数
   ND_NUM,      // Integer
   ND_RETURN,   // return keyword
   ND_IF,       // if keyword
@@ -77,22 +77,25 @@ typedef enum
   ND_EXPR_STMT // expression statement
 } NodeKind;
 
-typedef struct LVar LVar;
+typedef struct Var Var;
 
-struct LVar
+struct Var
 {
   char *name;
-  int len;
-  int offset;
   Type *ty;
+  int len;
+  bool is_local; // local or global
+
+  // local variable
+  int offset; // offset from RBP
 };
 
-typedef struct LVarList LVarList;
+typedef struct VarList VarList;
 
-struct LVarList
+struct VarList
 {
-  LVarList *next;
-  LVar *var;
+  VarList *next;
+  Var *var;
 };
 
 typedef struct Node Node;
@@ -118,8 +121,8 @@ struct Node
   char *funcname;
   Node *args;
 
-  int val;   // ND_NUMの時のみ使う
-  LVar *var; // ND_LVARの時のみ使い、変数に関する情報を格納する
+  int val;  // ND_NUMの時のみ使う
+  Var *var; // ND_VARの時のみ使い、変数に関する情報を格納する
 };
 
 Token *peek(char *op);
@@ -133,9 +136,9 @@ Node *new_node(NodeKind kind, Token *tok);
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok);
 Node *new_unary(NodeKind kind, Node *lhs, Token *tok);
 Node *new_node_num(int val, Token *tok);
-Node *new_node_lvar(LVar *lvar, Token *tok);
-LVar *new_lvar(char *name, Type *ty);
-LVar *find_lvar(Token *tok);
+Node *new_node_lvar(Var *lvar, Token *tok);
+Var *new_lvar(char *name, Type *ty);
+Var *find_lvar(Token *tok);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
 //       program    = stmt*
@@ -161,9 +164,9 @@ struct Function
 {
   Function *next;
   char *name;
-  LVarList *params;
+  VarList *params;
   Node *node;
-  LVarList *locals;
+  VarList *locals;
   int stack_size;
 };
 
@@ -183,7 +186,7 @@ Node *unary(void);
 Node *postfix(void);
 Node *primary(void);
 
-LVarList *locals;
+VarList *locals;
 
 /* type.c */
 

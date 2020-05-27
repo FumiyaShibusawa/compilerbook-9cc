@@ -97,28 +97,28 @@ Node *new_node_num(int val, Token *tok)
   return node;
 }
 
-Node *new_node_lvar(LVar *lvar, Token *tok)
+Node *new_node_lvar(Var *lvar, Token *tok)
 {
-  Node *node = new_node(ND_LVAR, tok);
+  Node *node = new_node(ND_VAR, tok);
   node->var = lvar;
   return node;
 }
 
-LVar *new_lvar(char *name, Type *ty)
+Var *new_lvar(char *name, Type *ty)
 {
-  LVar *lvar = calloc(1, sizeof(LVar));
+  Var *lvar = calloc(1, sizeof(Var));
   lvar->name = name;
   lvar->ty = ty;
-  LVarList *vl = calloc(1, sizeof(LVarList));
+  VarList *vl = calloc(1, sizeof(VarList));
   vl->var = lvar;
   vl->next = locals;
   locals = vl;
   return lvar;
 }
 
-LVar *find_lvar(Token *tok)
+Var *find_lvar(Token *tok)
 {
-  for (LVarList *vl = locals; vl; vl = vl->next)
+  for (VarList *vl = locals; vl; vl = vl->next)
     if (strlen(vl->var->name) == tok->len &&
         !strncmp(tok->str, vl->var->name, tok->len))
       return vl->var;
@@ -156,24 +156,24 @@ static Type *read_type_suffix(Type *base)
   return array_of(base, sz);
 }
 
-LVarList *read_func_param(void)
+VarList *read_func_param(void)
 {
   Type *ty = basetype();
   char *name = expect_ident();
   ty = read_type_suffix(ty);
 
-  LVarList *vl = calloc(1, sizeof(LVarList));
+  VarList *vl = calloc(1, sizeof(VarList));
   vl->var = new_lvar(name, ty);
   return vl;
 }
 
-LVarList *read_func_params(void)
+VarList *read_func_params(void)
 {
   if (consume(")"))
     return NULL;
 
-  LVarList *head = read_func_param();
-  LVarList *cur = head;
+  VarList *head = read_func_param();
+  VarList *cur = head;
 
   while (!consume(")"))
   {
@@ -213,7 +213,7 @@ Node *declaration(void)
   Type *ty = basetype();
   char *name = expect_ident();
   ty = read_type_suffix(ty);
-  LVar *var = new_lvar(name, ty);
+  Var *var = new_lvar(name, ty);
 
   if (consume(";"))
     return new_node(ND_NULL, tok);
@@ -498,7 +498,7 @@ Node *primary()
       return node;
     }
 
-    LVar *lvar = find_lvar(tok);
+    Var *lvar = find_lvar(tok);
     if (!lvar)
       error_tok(tok, "undefined variable");
     return new_node_lvar(lvar, tok);

@@ -8,7 +8,7 @@ void gen_lvar(Node *node)
 {
   switch (node->kind)
   {
-  case ND_LVAR:
+  case ND_VAR:
     // NOTE: can be written as `printf("  lea rax, [rbp-%d]\n", node->var->offset)`
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", node->var->offset);
@@ -147,7 +147,7 @@ void gen(Node *node)
   case ND_NUM:
     printf("  push %d\n", node->val);
     return;
-  case ND_LVAR:
+  case ND_VAR:
     gen_lvar(node);
     if (node->ty->kind != TY_ARRAY)
       load();
@@ -248,7 +248,7 @@ void codegen(Function *prog)
     printf("  sub rsp, %d\n", fn->stack_size);
 
     int i = 0;
-    for (LVarList *vl = fn->params; vl; vl = vl->next)
+    for (VarList *vl = fn->params; vl; vl = vl->next)
       printf("  mov [rbp-%d], %s\n", vl->var->offset, argreg[i++]);
 
     for (Node *node = fn->node; node; node = node->next)

@@ -17,7 +17,7 @@ int main(int argc, char **argv)
   for (Function *fn = prog; fn; fn = fn->next)
   {
     int offset = 0;
-    for (LVarList *vl = fn->locals; vl; vl = vl->next)
+    for (VarList *vl = fn->locals; vl; vl = vl->next)
     {
       offset += vl->var->ty->size;
       vl->var->offset = offset;
