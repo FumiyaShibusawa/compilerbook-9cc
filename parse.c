@@ -1,5 +1,8 @@
 #include "9cc.h"
 
+static VarList *locals;
+static VarList *globals;
+
 Token *peek(char *op)
 {
   if (token->kind != TK_RESERVED ||
@@ -104,40 +107,50 @@ Node *new_node_lvar(Var *lvar, Token *tok)
   return node;
 }
 
-Var *new_lvar(char *name, Type *ty)
+Var *new_var(char *name, Type *ty, bool is_local)
 {
-  Var *lvar = calloc(1, sizeof(Var));
-  lvar->name = name;
-  lvar->ty = ty;
-  VarList *vl = calloc(1, sizeof(VarList));
-  vl->var = lvar;
-  vl->next = locals;
-  locals = vl;
-  return lvar;
+  Var *var = calloc(1, sizeof(Var));
+  var->name = name;
+  var->ty = ty;
+  var->is_local = is_local;
+  return var;
 }
 
-Var *find_lvar(Token *tok)
+static Var *new_lvar(char *name, Type *ty)
+{
+  Var *var = new_var(name, ty, true);
+  VarList *vl = calloc(1, sizeof(VarList));
+  vl->var = var;
+  vl->next = locals;
+  locals = vl;
+  return var;
+}
+
+static Var *new_gvar(char *name, Type *ty)
+{
+  Var *var = new_var(name, ty, false);
+  VarList *vl = calloc(1, sizeof(VarList));
+  vl->var = var;
+  vl->next = globals;
+  globals = vl;
+  return var;
+}
+
+Var *find_var(Token *tok)
 {
   for (VarList *vl = locals; vl; vl = vl->next)
+    if (strlen(vl->var->name) == tok->len &&
+        !strncmp(tok->str, vl->var->name, tok->len))
+      return vl->var;
+
+  for (VarList *vl = globals; vl; vl = vl->next)
     if (strlen(vl->var->name) == tok->len &&
         !strncmp(tok->str, vl->var->name, tok->len))
       return vl->var;
   return NULL;
 }
 
-Function *program(void)
-{
-  Function head = {};
-  Function *cur = &head;
-  while (!at_eof())
-  {
-    cur->next = function();
-    cur = cur->next;
-  }
-  return head.next;
-}
-
-Type *basetype(void)
+static Type *basetype(void)
 {
   expect("int");
   Type *ty = int_type;
@@ -154,6 +167,48 @@ static Type *read_type_suffix(Type *base)
   expect("]");
   base = read_type_suffix(base);
   return array_of(base, sz);
+}
+
+static bool is_function(void)
+{
+  // 一旦トークンを退避して先読みしたあと元に戻すという手順を踏む
+  Token *tok = token;
+  basetype();
+  bool isfunc = consume_ident() && consume("(");
+  token = tok;
+  return isfunc;
+};
+
+static void global_var(void)
+{
+  Type *ty = basetype();
+  char *name = expect_ident();
+  ty = read_type_suffix(ty);
+  expect(";");
+  new_gvar(name, ty);
+};
+
+Program *program(void)
+{
+  Function head = {};
+  Function *cur = &head;
+  globals = NULL;
+
+  while (!at_eof())
+  {
+    if (is_function())
+    {
+      cur->next = function();
+      cur = cur->next;
+    }
+    else
+      global_var();
+  }
+
+  Program *prog = calloc(1, sizeof(Program));
+  prog->globals = globals;
+  prog->fns = head.next;
+  return prog;
 }
 
 VarList *read_func_param(void)
@@ -498,7 +553,7 @@ Node *primary()
       return node;
     }
 
-    Var *lvar = find_lvar(tok);
+    Var *lvar = find_var(tok);
     if (!lvar)
       error_tok(tok, "undefined variable");
     return new_node_lvar(lvar, tok);

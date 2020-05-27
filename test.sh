@@ -17,7 +17,7 @@ try() {
   input="$2"
 
   ./9cc "$input" > tmp.s
-  gcc -o tmp tmp.s tmp2.o
+  gcc -static -o tmp tmp.s tmp2.o
   ./tmp
   actual="$?"
 
@@ -131,5 +131,15 @@ try 8 'int main() { int x[3][4]; return sizeof(**x); }'
 try 9 'int main() { int x[3][4]; return sizeof(**x) + 1; }'
 try 9 'int main() { int x[3][4]; return sizeof **x + 1; }'
 try 8 'int main() { int x[3][4]; return sizeof(**x + 1); }'
+
+try 0 'int x; int main() { return x; }'
+try 3 'int x; int main() { x=3; return x; }'
+try 0 'int x[4]; int main() { x[0]=0; x[1]=1; x[2]=2; x[3]=3; return x[0]; }'
+try 1 'int x[4]; int main() { x[0]=0; x[1]=1; x[2]=2; x[3]=3; return x[1]; }'
+try 2 'int x[4]; int main() { x[0]=0; x[1]=1; x[2]=2; x[3]=3; return x[2]; }'
+try 3 'int x[4]; int main() { x[0]=0; x[1]=1; x[2]=2; x[3]=3; return x[3]; }'
+
+try 8 'int x; int main() { return sizeof(x); }'
+try 32 'int x[4]; int main() { return sizeof(x); }'
 
 echo OK

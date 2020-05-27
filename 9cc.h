@@ -137,8 +137,8 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok);
 Node *new_unary(NodeKind kind, Node *lhs, Token *tok);
 Node *new_node_num(int val, Token *tok);
 Node *new_node_lvar(Var *lvar, Token *tok);
-Var *new_lvar(char *name, Type *ty);
-Var *find_lvar(Token *tok);
+Var *new_var(char *name, Type *ty, bool is_local);
+Var *find_var(Token *tok);
 
 // NODE: 四則演算, 比較表現, 変数は以下で表現される。これをC関数に落とし込む。
 //       program    = stmt*
@@ -170,8 +170,14 @@ struct Function
   int stack_size;
 };
 
-Function *program(void);
-void codegen(Function *prog);
+typedef struct
+{
+  VarList *globals;
+  Function *fns;
+} Program;
+
+Program *program(void);
+void codegen(Program *prog);
 Function *function(void);
 Node *declaration(void);
 Node *stmt(void);
@@ -185,8 +191,6 @@ Node *mul(void);
 Node *unary(void);
 Node *postfix(void);
 Node *primary(void);
-
-VarList *locals;
 
 /* type.c */
 
