@@ -11,13 +11,13 @@ int main(int argc, char **argv)
   // デバッグ用
   // for (Token *var = token; var; var = var->next)
   //   printf("token->kind: %d token->str: %s token->len: %d\n", var->kind, var->str, var->len);
-  Function *prog = program();
+  Program *prog = program();
 
   // 関数ごとのローカル変数用のメモリサイズを計算する
-  for (Function *fn = prog; fn; fn = fn->next)
+  for (Function *fn = prog->fns; fn; fn = fn->next)
   {
     int offset = 0;
-    for (LVarList *vl = fn->locals; vl; vl = vl->next)
+    for (VarList *vl = fn->locals; vl; vl = vl->next)
     {
       offset += vl->var->ty->size;
       vl->var->offset = offset;

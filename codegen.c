@@ -8,12 +8,20 @@ void gen_lvar(Node *node)
 {
   switch (node->kind)
   {
-  case ND_LVAR:
-    // NOTE: can be written as `printf("  lea rax, [rbp-%d]\n", node->var->offset)`
-    printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", node->var->offset);
-    printf("  push rax\n");
+  case ND_VAR:
+  {
+    Var *var = node->var;
+    if (var->is_local)
+    {
+      // NOTE: can be written as `printf("  lea rax, [rbp-%d]\n", node->var->offset)`
+      printf("  mov rax, rbp\n");
+      printf("  sub rax, %d\n", var->offset);
+      printf("  push rax\n");
+    }
+    else
+      printf("  push offset %s\n", var->name);
     return;
+  }
   case ND_DEREF:
     gen(node->lhs);
     return;
@@ -147,7 +155,7 @@ void gen(Node *node)
   case ND_NUM:
     printf("  push %d\n", node->val);
     return;
-  case ND_LVAR:
+  case ND_VAR:
     gen_lvar(node);
     if (node->ty->kind != TY_ARRAY)
       load();
@@ -233,10 +241,21 @@ void gen(Node *node)
   printf("  push rax\n");
 }
 
-void codegen(Function *prog)
+static void emit_data(Program *prog)
 {
-  printf(".intel_syntax noprefix\n");
-  for (Function *fn = prog; fn; fn = fn->next)
+  printf(".data\n");
+  for (VarList *vl = prog->globals; vl; vl = vl->next)
+  {
+    Var *var = vl->var;
+    printf("%s:\n", var->name);
+    printf("  .zero %ld\n", var->ty->size);
+  }
+}
+
+static void emit_text(Program *prog)
+{
+  printf(".text\n");
+  for (Function *fn = prog->fns; fn; fn = fn->next)
   {
     printf(".global %s\n", fn->name);
     printf("%s:\n", fn->name);
@@ -248,7 +267,7 @@ void codegen(Function *prog)
     printf("  sub rsp, %d\n", fn->stack_size);
 
     int i = 0;
-    for (LVarList *vl = fn->params; vl; vl = vl->next)
+    for (VarList *vl = fn->params; vl; vl = vl->next)
       printf("  mov [rbp-%d], %s\n", vl->var->offset, argreg[i++]);
 
     for (Node *node = fn->node; node; node = node->next)
@@ -260,4 +279,11 @@ void codegen(Function *prog)
     printf("  pop rbp\n");
     printf("  ret\n");
   }
+}
+
+void codegen(Program *prog)
+{
+  printf(".intel_syntax noprefix\n");
+  emit_data(prog);
+  emit_text(prog);
 }

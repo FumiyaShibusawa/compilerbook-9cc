@@ -1,5 +1,8 @@
 #include "9cc.h"
 
+static VarList *locals;
+static VarList *globals;
+
 Token *peek(char *op)
 {
   if (token->kind != TK_RESERVED ||
@@ -97,47 +100,57 @@ Node *new_node_num(int val, Token *tok)
   return node;
 }
 
-Node *new_node_lvar(LVar *lvar, Token *tok)
+Node *new_node_lvar(Var *lvar, Token *tok)
 {
-  Node *node = new_node(ND_LVAR, tok);
+  Node *node = new_node(ND_VAR, tok);
   node->var = lvar;
   return node;
 }
 
-LVar *new_lvar(char *name, Type *ty)
+Var *new_var(char *name, Type *ty, bool is_local)
 {
-  LVar *lvar = calloc(1, sizeof(LVar));
-  lvar->name = name;
-  lvar->ty = ty;
-  LVarList *vl = calloc(1, sizeof(LVarList));
-  vl->var = lvar;
-  vl->next = locals;
-  locals = vl;
-  return lvar;
+  Var *var = calloc(1, sizeof(Var));
+  var->name = name;
+  var->ty = ty;
+  var->is_local = is_local;
+  return var;
 }
 
-LVar *find_lvar(Token *tok)
+static Var *new_lvar(char *name, Type *ty)
 {
-  for (LVarList *vl = locals; vl; vl = vl->next)
+  Var *var = new_var(name, ty, true);
+  VarList *vl = calloc(1, sizeof(VarList));
+  vl->var = var;
+  vl->next = locals;
+  locals = vl;
+  return var;
+}
+
+static Var *new_gvar(char *name, Type *ty)
+{
+  Var *var = new_var(name, ty, false);
+  VarList *vl = calloc(1, sizeof(VarList));
+  vl->var = var;
+  vl->next = globals;
+  globals = vl;
+  return var;
+}
+
+Var *find_var(Token *tok)
+{
+  for (VarList *vl = locals; vl; vl = vl->next)
+    if (strlen(vl->var->name) == tok->len &&
+        !strncmp(tok->str, vl->var->name, tok->len))
+      return vl->var;
+
+  for (VarList *vl = globals; vl; vl = vl->next)
     if (strlen(vl->var->name) == tok->len &&
         !strncmp(tok->str, vl->var->name, tok->len))
       return vl->var;
   return NULL;
 }
 
-Function *program(void)
-{
-  Function head = {};
-  Function *cur = &head;
-  while (!at_eof())
-  {
-    cur->next = function();
-    cur = cur->next;
-  }
-  return head.next;
-}
-
-Type *basetype(void)
+static Type *basetype(void)
 {
   expect("int");
   Type *ty = int_type;
@@ -156,24 +169,66 @@ static Type *read_type_suffix(Type *base)
   return array_of(base, sz);
 }
 
-LVarList *read_func_param(void)
+static bool is_function(void)
+{
+  // 一旦トークンを退避して先読みしたあと元に戻すという手順を踏む
+  Token *tok = token;
+  basetype();
+  bool isfunc = consume_ident() && consume("(");
+  token = tok;
+  return isfunc;
+};
+
+static void global_var(void)
+{
+  Type *ty = basetype();
+  char *name = expect_ident();
+  ty = read_type_suffix(ty);
+  expect(";");
+  new_gvar(name, ty);
+};
+
+Program *program(void)
+{
+  Function head = {};
+  Function *cur = &head;
+  globals = NULL;
+
+  while (!at_eof())
+  {
+    if (is_function())
+    {
+      cur->next = function();
+      cur = cur->next;
+    }
+    else
+      global_var();
+  }
+
+  Program *prog = calloc(1, sizeof(Program));
+  prog->globals = globals;
+  prog->fns = head.next;
+  return prog;
+}
+
+VarList *read_func_param(void)
 {
   Type *ty = basetype();
   char *name = expect_ident();
   ty = read_type_suffix(ty);
 
-  LVarList *vl = calloc(1, sizeof(LVarList));
+  VarList *vl = calloc(1, sizeof(VarList));
   vl->var = new_lvar(name, ty);
   return vl;
 }
 
-LVarList *read_func_params(void)
+VarList *read_func_params(void)
 {
   if (consume(")"))
     return NULL;
 
-  LVarList *head = read_func_param();
-  LVarList *cur = head;
+  VarList *head = read_func_param();
+  VarList *cur = head;
 
   while (!consume(")"))
   {
@@ -213,7 +268,7 @@ Node *declaration(void)
   Type *ty = basetype();
   char *name = expect_ident();
   ty = read_type_suffix(ty);
-  LVar *var = new_lvar(name, ty);
+  Var *var = new_lvar(name, ty);
 
   if (consume(";"))
     return new_node(ND_NULL, tok);
@@ -498,7 +553,7 @@ Node *primary()
       return node;
     }
 
-    LVar *lvar = find_lvar(tok);
+    Var *lvar = find_var(tok);
     if (!lvar)
       error_tok(tok, "undefined variable");
     return new_node_lvar(lvar, tok);
