@@ -56,7 +56,8 @@ bool starts_with(char *lhs, char *rhs)
 bool is_alpha(char c)
 {
   return ('a' <= c && c <= 'z') ||
-         ('A' <= c && c <= 'Z');
+         ('A' <= c && c <= 'Z') ||
+         c == '_';
 }
 
 bool is_alnum(char c)
@@ -66,7 +67,7 @@ bool is_alnum(char c)
 
 char *starts_with_reserved(char *p)
 {
-  char *kw[] = {"if", "else", "return", "while", "for", "int", "sizeof"};
+  char *kw[] = {"if", "else", "return", "while", "for", "int", "sizeof", "char"};
   int kw_size = sizeof(kw) / sizeof(kw[0]);
   for (size_t i = 0; i < kw_size; i++)
   {
