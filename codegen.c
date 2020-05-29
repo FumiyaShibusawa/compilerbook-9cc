@@ -1,8 +1,9 @@
 #include "9cc.h"
 
-int labelseq = 1;
-char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
-char *funcname;
+static int labelseq = 1;
+static char *argreg1[] = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
+static char *argreg8[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+static char *funcname;
 
 void gen_lvar(Node *node)
 {
@@ -36,11 +37,25 @@ static void gen_lval(Node *node)
   gen_lvar(node);
 }
 
-void load(void)
+static void load(Type *ty)
 {
   printf("  pop rax\n");
-  printf("  mov rax, [rax]\n");
+  if (ty->size == 1)
+    printf("  movsx rax, byte ptr [rax]\n");
+  else
+    printf("  mov rax, [rax]\n");
   printf("  push rax\n");
+}
+
+static void store(Type *ty)
+{
+  printf("  pop rdi\n");
+  printf("  pop rax\n");
+  if (ty->size == 1)
+    printf("  mov [rax], dil\n");
+  else
+    printf("  mov [rax], rdi\n");
+  printf("  push rdi\n");
 }
 
 void gen(Node *node)
@@ -126,7 +141,7 @@ void gen(Node *node)
     }
 
     for (int i = nargs - 1; i >= 0; i--)
-      printf("  pop %s\n", argreg[i]);
+      printf("  pop %s\n", argreg8[i]);
 
     // We need to align RSP to a 16 byte boundary before
     // calling a function to meet ABI requirement.
@@ -158,16 +173,12 @@ void gen(Node *node)
   case ND_VAR:
     gen_lvar(node);
     if (node->ty->kind != TY_ARRAY)
-      load();
+      load(node->ty);
     return;
   case ND_ASSIGN:
     gen_lval(node->lhs);
     gen(node->rhs);
-
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
-    printf("  mov [rax], rdi\n");
-    printf("  push rdi\n");
+    store(node->ty);
     return;
   case ND_ADDR:
     gen_lvar(node->lhs);
@@ -175,7 +186,7 @@ void gen(Node *node)
   case ND_DEREF:
     gen(node->lhs);
     if (node->ty->kind != TY_ARRAY)
-      load();
+      load(node->ty);
     return;
   }
 
@@ -252,6 +263,18 @@ static void emit_data(Program *prog)
   }
 }
 
+static void load_arg(Var *var, int idx)
+{
+  int sz = var->ty->size;
+  if (sz == 1)
+    printf("  mov [rbp-%d], %s\n", var->offset, argreg1[idx]);
+  else
+  {
+    assert(sz == 8);
+    printf("  mov [rbp-%d], %s\n", var->offset, argreg8[idx]);
+  }
+}
+
 static void emit_text(Program *prog)
 {
   printf(".text\n");
@@ -268,7 +291,7 @@ static void emit_text(Program *prog)
 
     int i = 0;
     for (VarList *vl = fn->params; vl; vl = vl->next)
-      printf("  mov [rbp-%d], %s\n", vl->var->offset, argreg[i++]);
+      load_arg(vl->var, i++);
 
     for (Node *node = fn->node; node; node = node->next)
       gen(node);

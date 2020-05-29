@@ -152,8 +152,15 @@ Var *find_var(Token *tok)
 
 static Type *basetype(void)
 {
-  expect("int");
-  Type *ty = int_type;
+  Type *ty;
+  if (consume("char"))
+    ty = char_type;
+  else
+  {
+    expect("int");
+    ty = int_type;
+  }
+
   while (consume("*"))
     ty = pointer_to(ty);
   return ty;
@@ -287,6 +294,11 @@ Node *read_expr_stmt(void)
   return new_unary(ND_EXPR_STMT, expr(), tok);
 }
 
+static bool is_typename(void)
+{
+  return peek("char") || peek("int");
+}
+
 Node *stmt(void)
 {
   Node *node = stmt2();
@@ -360,7 +372,7 @@ Node *stmt2(void)
     node->body = head.next;
     return node;
   }
-  if (tok = peek("int"))
+  if (is_typename())
     return declaration();
 
   node = read_expr_stmt();
@@ -553,10 +565,10 @@ Node *primary()
       return node;
     }
 
-    Var *lvar = find_var(tok);
-    if (!lvar)
+    Var *var = find_var(tok);
+    if (!var)
       error_tok(tok, "undefined variable");
-    return new_node_lvar(lvar, tok);
+    return new_node_lvar(var, tok);
   }
 
   tok = token;
