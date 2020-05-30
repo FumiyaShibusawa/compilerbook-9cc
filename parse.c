@@ -545,12 +545,36 @@ Node *postfix(void)
   return node;
 }
 
+// stmt-expr = "(" "{" stmt stmt* "}" ")"
+// statement expression is a GNU C extension
+static Node *stmt_expr(Token *tok)
+{
+  Node *node = new_node(ND_STMT_EXPR, tok);
+  node->body = stmt();
+  Node *cur = node->body;
+
+  while (!consume("}"))
+  {
+    cur->next = stmt();
+    cur = cur->next;
+  }
+  expect(")");
+
+  if (cur->kind != ND_EXPR_STMT)
+    error_tok(tok, "stmt expre returning void is not supported");
+  memcpy(cur, cur->lhs, sizeof(Node));
+  return node;
+}
+
 Node *primary()
 {
   Token *tok;
 
   if (consume("("))
   {
+    if (consume("{"))
+      return stmt_expr(tok);
+
     Node *node = expr();
     expect(")");
     return node;

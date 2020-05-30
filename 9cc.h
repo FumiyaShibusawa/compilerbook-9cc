@@ -55,30 +55,31 @@ Token *tokenize();
 
 typedef enum
 {
-  ND_ASSIGN,   // =
-  ND_EQ,       // ==
-  ND_NE,       // !=
-  ND_LE,       // <=
-  ND_LT,       // <
-  ND_ADD,      // num + num
-  ND_PTR_ADD,  // ptr + num || num + ptr
-  ND_SUB,      // num - num
-  ND_PTR_SUB,  // ptr - num || num - ptr
-  ND_PTR_DIFF, // ptr - ptr
-  ND_MUL,      // *
-  ND_DIV,      // /
-  ND_ADDR,     // unary &
-  ND_DEREF,    // unary *
-  ND_VAR,      // 変数
-  ND_NUM,      // Integer
-  ND_RETURN,   // return keyword
-  ND_IF,       // if keyword
-  ND_WHILE,    // while keyword
-  ND_FOR,      // for keyword
-  ND_BLOCK,    // block
-  ND_NULL,     // empty statement
-  ND_FUNCALL,  // function call
-  ND_EXPR_STMT // expression statement
+  ND_ASSIGN,    // =
+  ND_EQ,        // ==
+  ND_NE,        // !=
+  ND_LE,        // <=
+  ND_LT,        // <
+  ND_ADD,       // num + num
+  ND_PTR_ADD,   // ptr + num || num + ptr
+  ND_SUB,       // num - num
+  ND_PTR_SUB,   // ptr - num || num - ptr
+  ND_PTR_DIFF,  // ptr - ptr
+  ND_MUL,       // *
+  ND_DIV,       // /
+  ND_ADDR,      // unary &
+  ND_DEREF,     // unary *
+  ND_VAR,       // 変数
+  ND_NUM,       // Integer
+  ND_RETURN,    // return keyword
+  ND_IF,        // if keyword
+  ND_WHILE,     // while keyword
+  ND_FOR,       // for keyword
+  ND_BLOCK,     // block
+  ND_NULL,      // empty statement
+  ND_FUNCALL,   // function call
+  ND_EXPR_STMT, // expression statement
+  ND_STMT_EXPR  // expression statement
 } NodeKind;
 
 typedef struct Var Var;
@@ -120,7 +121,7 @@ struct Node
   Node *els;
   Node *inc;
 
-  Node *body; // statements in block
+  Node *body; // statements in block or statement expression
   Node *next; // next node
   Type *ty;   // Type, e.g. int, pointer to int
   Token *tok;
