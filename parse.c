@@ -100,7 +100,7 @@ Node *new_node_num(int val, Token *tok)
   return node;
 }
 
-Node *new_node_lvar(Var *lvar, Token *tok)
+Node *new_node_var(Var *lvar, Token *tok)
 {
   Node *node = new_node(ND_VAR, tok);
   node->var = lvar;
@@ -134,6 +134,14 @@ static Var *new_gvar(char *name, Type *ty)
   vl->next = globals;
   globals = vl;
   return var;
+}
+
+static char *new_label(void)
+{
+  static int cnt = 0;
+  char buf[20];
+  sprintf(buf, ".L.data.%d", cnt++);
+  return strndup(buf, 20);
 }
 
 Var *find_var(Token *tok)
@@ -281,7 +289,7 @@ Node *declaration(void)
     return new_node(ND_NULL, tok);
 
   expect("=");
-  Node *lhs = new_node_lvar(var, tok);
+  Node *lhs = new_node_var(var, tok);
   Node *rhs = expr();
   expect(";");
   Node *node = new_binary(ND_ASSIGN, lhs, rhs, tok);
@@ -568,10 +576,20 @@ Node *primary()
     Var *var = find_var(tok);
     if (!var)
       error_tok(tok, "undefined variable");
-    return new_node_lvar(var, tok);
+    return new_node_var(var, tok);
   }
 
   tok = token;
+  if (tok->kind == TK_STR)
+  {
+    token = token->next;
+    Type *ty = array_of(char_type, tok->cont_len);
+    Var *var = new_gvar(new_label(), ty);
+    var->contents = tok->contents;
+    var->cont_len = tok->cont_len;
+    return new_node_var(var, tok);
+  }
+
   if (tok->kind != TK_NUM)
     error_tok(tok, "expected expression");
   return new_node_num(expect_number(), tok);

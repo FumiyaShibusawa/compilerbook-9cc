@@ -16,6 +16,7 @@ typedef enum
 {
   TK_RESERVED, // 記号
   TK_IDENT,    // 識別子
+  TK_STR,      // 文字リテラル
   TK_NUM,      // 整数トークン
   TK_EOF       // 入力の終わりを表すトークン
 } TokenKind;
@@ -37,6 +38,8 @@ struct Token
   int val;        // kindがTK_NUMの場合、その数値
   char *str;      // トークン文字列
   int len;        // トークンの長さ ※ 数値の長さではない
+  char *contents; // 文字リテラル
+  char cont_len;  // 文字リテラルの長さ
 };
 
 Token *token;
@@ -89,6 +92,10 @@ struct Var
 
   // local variable
   int offset; // offset from RBP
+
+  // global variable
+  char *contents;
+  int cont_len;
 };
 
 typedef struct VarList VarList;
@@ -137,7 +144,7 @@ Node *new_node(NodeKind kind, Token *tok);
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok);
 Node *new_unary(NodeKind kind, Node *lhs, Token *tok);
 Node *new_node_num(int val, Token *tok);
-Node *new_node_lvar(Var *lvar, Token *tok);
+Node *new_node_var(Var *lvar, Token *tok);
 Var *new_var(char *name, Type *ty, bool is_local);
 Var *find_var(Token *tok);
 
