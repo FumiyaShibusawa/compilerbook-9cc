@@ -13,10 +13,30 @@ void error(char *fmt, ...)
   exit(1);
 }
 
+// reports an error message in the following format and exit.
+// foo.c:10: x = y + 1;
+//               ^ <error message here>
 void verror_at(char *loc, char *fmt, va_list ap)
 {
-  int pos = loc - user_input;
-  fprintf(stderr, "%s\n", user_input);
+  // エラー箇所の行の開始地点と終了地点を取得する
+  char *line = loc;
+  while (user_input < line && line[-1] != '\n')
+    line--;
+
+  char *end = loc;
+  while (*end = '\n')
+    end++;
+
+  // エラー箇所が何行目かを調べる
+  int line_num = 1;
+  for (char *p = user_input; p < line; p++)
+    if (*p == '\n')
+      line_num++;
+
+  int indent = fprintf(stderr, "%s:%d: ", filename, line_num);
+  fprintf(stderr, "%.*s\n", (int)(end - line), line);
+
+  int pos = loc - line + indent;
   fprintf(stderr, "%*s", pos, "");
   fprintf(stderr, "^ ");
   vfprintf(stderr, fmt, ap);

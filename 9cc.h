@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -233,6 +234,7 @@ void gen(Node *node);
 
 /* main.c */
 
+char *filename;
 char *user_input;
 
 int main(int argc, char **argv);
