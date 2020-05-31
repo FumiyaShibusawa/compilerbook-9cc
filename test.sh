@@ -70,7 +70,7 @@ try 5 'int main() { int foo = 5; return foo; }'
 try 1 'int main() { if (10 >= 5) { return 1; } }'
 try 1 'int main() { if (10 >= 5) { return 1; } else { return 2; } }'
 try 1 'int main() { if (10 >= 5) { 1; } else { 2; } }'
-try 2 'int main() { int foo = 10; if (foo < 5) { int bar = 1; } else { int bar = 2; } return bar; }'
+try 2 'int main() { int foo = 10; int bar; if (foo < 5) { bar = 1; } else { bar = 2; } return bar; }'
 
 try 10 'int main() { int count = 0; while (count < 10) { count = count + 1; } return count; }'
 
@@ -172,5 +172,9 @@ try 3 'int main() { return ({ int x=3; x; }); }'
 try 2 'int main() { /* this is a block comment */ return 2; }'
 try 2 'int main() { // this is a line comment
 return 2; }'
+
+try 2 'int main() { int x=2; { int x=3; } return x; }'
+try 2 'int main() { int x=2; { int x=3; } { int y=4; return x; }}'
+try 3 'int main() { int x=2; { x=3; } return x; }'
 
 echo OK
