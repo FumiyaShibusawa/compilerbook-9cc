@@ -174,6 +174,25 @@ Token *tokenize()
       continue;
     }
 
+    // line comments
+    if (starts_with(p, "//"))
+    {
+      p += 2;
+      while (*p != '\n')
+        p++;
+      continue;
+    }
+
+    // block comments
+    if (starts_with(p, "/*"))
+    {
+      char *q = strstr(p + 2, "*/");
+      if (!q)
+        error_at(p, "unclosed block comment");
+      p = q + 2;
+      continue;
+    }
+
     // string literal
     if (*p == '"')
     {

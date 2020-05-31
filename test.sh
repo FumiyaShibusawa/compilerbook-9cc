@@ -169,4 +169,8 @@ try 2 'int main() { return ({ 0; 1; 2; }); }'
 try 1 'int main() { ({ 0; return 1; 2; }); return 3; }'
 try 3 'int main() { return ({ int x=3; x; }); }'
 
+try 2 'int main() { /* this is a block comment */ return 2; }'
+try 2 'int main() { // this is a line comment
+return 2; }'
+
 echo OK
