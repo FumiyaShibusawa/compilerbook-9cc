@@ -2,6 +2,7 @@
 
 static VarList *locals;
 static VarList *globals;
+static VarList *scope;
 
 Token *peek(char *op)
 {
@@ -113,6 +114,11 @@ Var *new_var(char *name, Type *ty, bool is_local)
   var->name = name;
   var->ty = ty;
   var->is_local = is_local;
+
+  VarList *sc = calloc(1, sizeof(VarList));
+  sc->var = var;
+  sc->next = scope;
+  scope = sc;
   return var;
 }
 
@@ -146,12 +152,7 @@ static char *new_label(void)
 
 Var *find_var(Token *tok)
 {
-  for (VarList *vl = locals; vl; vl = vl->next)
-    if (strlen(vl->var->name) == tok->len &&
-        !strncmp(tok->str, vl->var->name, tok->len))
-      return vl->var;
-
-  for (VarList *vl = globals; vl; vl = vl->next)
+  for (VarList *vl = scope; vl; vl = vl->next)
     if (strlen(vl->var->name) == tok->len &&
         !strncmp(tok->str, vl->var->name, tok->len))
       return vl->var;
@@ -262,6 +263,7 @@ Function *function(void)
   basetype();
   fn->name = expect_ident();
   expect("(");
+  VarList *sc = scope;
   fn->params = read_func_params();
   expect("{");
   Node head = {};
@@ -271,6 +273,7 @@ Function *function(void)
     cur->next = stmt();
     cur = cur->next;
   }
+  scope = sc;
 
   fn->node = head.next;
   fn->locals = locals;
@@ -372,11 +375,13 @@ Node *stmt2(void)
     node = new_node(ND_BLOCK, tok);
     Node head = {};
     Node *cur = &head;
+    VarList *sc = scope;
     while (!consume("}"))
     {
       cur->next = stmt();
       cur = cur->next;
     }
+    scope = sc;
     node->body = head.next;
     return node;
   }
@@ -549,6 +554,7 @@ Node *postfix(void)
 // statement expression is a GNU C extension
 static Node *stmt_expr(Token *tok)
 {
+  VarList *sc = scope;
   Node *node = new_node(ND_STMT_EXPR, tok);
   node->body = stmt();
   Node *cur = node->body;
@@ -559,6 +565,7 @@ static Node *stmt_expr(Token *tok)
     cur = cur->next;
   }
   expect(")");
+  scope = sc;
 
   if (cur->kind != ND_EXPR_STMT)
     error_tok(tok, "stmt expre returning void is not supported");
